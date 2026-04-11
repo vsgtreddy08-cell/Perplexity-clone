@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perplexity</title>
+    <meta name="description" content="Where knowledge begins. Ask anything, get answers powered by AI.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=2">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Firebase SDK (Compat Version for Vanilla JS) -->
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <div class="app-container">
+
+        <!-- ========== SIDEBAR ========== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-top">
+                <!-- New thread -->
+                <div class="nav-item" id="nav-new-thread">
+                    <i data-lucide="plus"></i>
+                    <span>New Thread</span>
+                </div>
+
+                <div class="nav-divider"></div>
+
+                <div class="nav-item active" id="nav-search">
+                    <i data-lucide="search"></i>
+                    <span>Home</span>
+                </div>
+                <div class="nav-item" id="nav-discover">
+                    <i data-lucide="compass"></i>
+                    <span>Discover</span>
+                </div>
+                <div class="nav-item" id="nav-spaces">
+                    <i data-lucide="layout-grid"></i>
+                    <span>Spaces</span>
+                </div>
+                <div class="nav-item" id="nav-computer">
+                    <i data-lucide="cpu"></i>
+                    <span>Computer</span>
+                </div>
+
+                <div class="nav-divider"></div>
+
+                <div class="nav-item" id="nav-history">
+                    <i data-lucide="clock"></i>
+                    <span>Library</span>
+                </div>
+            </div>
+
+            <div class="sidebar-bottom">
+                <div class="history-section">
+                    <h3>Recent</h3>
+                    <div id="history-list">
+                        <p>Your threads will appear here.</p>
+                    </div>
+                </div>
+                
+                <!-- Guest View -->
+                <div class="sign-in-btn" id="sign-in-btn">
+                    <i data-lucide="user"></i>
+                    <span>Sign In</span>
+                    <i data-lucide="chevron-right" class="arrow"></i>
+                </div>
+
+                <!-- User Profile (Hidden by default) -->
+                <div class="user-profile hidden" id="user-profile-btn">
+                    <img src="" alt="User" class="user-avatar" id="user-avatar">
+                    <div class="user-info">
+                        <span class="user-name" id="user-name">User Name</span>
+                        <span class="user-status">Pro</span>
+                    </div>
+                    <i data-lucide="log-out" class="logout-icon" id="logout-btn" title="Sign Out"></i>
+                </div>
+
+                <!-- Theme Toggle -->
+                <div class="nav-item theme-toggle-btn" id="theme-toggle-btn" style="margin-top: 0.5rem;">
+                    <i data-lucide="sun" id="theme-icon"></i>
+                    <span id="theme-text">Light Mode</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ========== MAIN CONTENT ========== -->
+        <main class="main-content" id="main-content">
+            <!-- RIPPLE BACKGROUND (MagicUI Exact Replica) -->
+            <div class="ripple-background">
+                <div class="ripple-circle" style="--i: 0;"></div>
+                <div class="ripple-circle" style="--i: 1;"></div>
+                <div class="ripple-circle" style="--i: 2;"></div>
+                <div class="ripple-circle" style="--i: 3;"></div>
+                <div class="ripple-circle" style="--i: 4;"></div>
+                <div class="ripple-circle" style="--i: 5;"></div>
+                <div class="ripple-circle" style="--i: 6;"></div>
+                <div class="ripple-circle" style="--i: 7;"></div>
+            </div>
+
+            <!-- HOME VIEW -->
+            <div class="view" id="home-view">
+
+                <div class="hero-section" style="z-index: 10; position: relative;">
+                    <h1 class="logo" id="logo">perplexity</h1>
+
+                    <!-- Search Bar -->
+                    <div class="search-container" id="home-search-container">
+                        <div class="attached-files-container" id="home-attached-files"></div>
+                        <textarea id="home-search-input" placeholder="Ask anything..." rows="1"></textarea>
+                        <div class="search-footer">
+                            <div class="footer-left">
+                                <button class="icon-btn-text" title="Attach file"><i data-lucide="paperclip"></i></button>
+                                <div class="computer-tag">
+                                    <i data-lucide="sparkles"></i>
+                                    <span>Pro</span>
+                                </div>
+                            </div>
+                            <div class="footer-right">
+                                <button class="model-picker">
+                                    <span>Focus</span>
+                                    <i data-lucide="chevron-down"></i>
+                                </button>
+                                <button class="icon-btn" title="Voice input"><i data-lucide="mic"></i></button>
+                                <button class="submit-btn" id="home-submit-btn">
+                                    <i data-lucide="arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Suggestions -->
+                    <div class="suggestions-dashboard">
+                        <div class="dashboard-header">
+                            <i data-lucide="trending-up"></i>
+                            <span>Trending</span>
+                        </div>
+                        <div class="dashboard-tabs">
+                            <button class="tab-btn active" data-tab="taxes">
+                                <i data-lucide="file-text"></i>
+                                <span>Tax season</span>
+                                <span class="badge">New</span>
+                            </button>
+                            <button class="tab-btn" data-tab="business">
+                                <i data-lucide="briefcase"></i>
+                                <span>Business</span>
+                            </button>
+                            <button class="tab-btn" data-tab="learn">
+                                <i data-lucide="lightbulb"></i>
+                                <span>Learn</span>
+                            </button>
+                            <button class="tab-btn" data-tab="monitor">
+                                <i data-lucide="eye"></i>
+                                <span>Monitor</span>
+                            </button>
+                        </div>
+                        <div class="suggestion-list" id="suggestion-content">
+                            <div class="suggestion-item">Prepare my 2025 taxes for my review</div>
+                            <div class="suggestion-item">I got married this year — should we file jointly or separately?</div>
+                            <div class="suggestion-item">How should I report my stock compensation when filing my taxes?</div>
+                            <div class="suggestion-item">Do I qualify for the new no-tax-on-tips deduction?</div>
+                            <div class="suggestion-item">Maximize my 2025 tax deductions as a small business owner</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAT VIEW -->
+            <div class="view hidden" id="chat-view">
+                <div class="chat-header">
+                    <button class="back-btn" id="back-to-home">
+                        <i data-lucide="arrow-left"></i>
+                    </button>
+                    <span class="chat-title" id="chat-title">New Thread</span>
+                    <button class="new-thread-btn" id="chat-new-thread" title="New thread">
+                        <i data-lucide="plus"></i>
+                    </button>
+                </div>
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Messages rendered dynamically -->
+                </div>
+                <div class="chat-input-area">
+                    <div class="search-container chat-search-container">
+                        <div class="attached-files-container" id="chat-attached-files"></div>
+                        <textarea id="chat-search-input" placeholder="Ask follow-up..." rows="1"></textarea>
+                        <div class="search-footer">
+                            <div class="footer-left">
+                                <button class="icon-btn-text" title="Attach file"><i data-lucide="paperclip"></i></button>
+                                <div class="computer-tag">
+                                    <i data-lucide="sparkles"></i>
+                                    <span>Pro</span>
+                                </div>
+                            </div>
+                            <div class="footer-right">
+                                <button class="model-picker">
+                                    <span>Focus</span>
+                                    <i data-lucide="chevron-down"></i>
+                                </button>
+                                <button class="submit-btn" id="chat-submit-btn">
+                                    <i data-lucide="arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DISCOVER VIEW -->
+            <div class="view hidden" id="discover-view">
+                <div class="view-header">
+                    <h2><i data-lucide="compass"></i> Discover</h2>
+                </div>
+                <div class="discover-grid" id="discover-grid">
+                    <div class="discover-card" data-topic="Artificial General Intelligence">
+                        <img class="discover-img" src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=600&auto=format&fit=crop" alt="AI">
+                        <div class="discover-content">
+                            <span class="discover-badge">Technology</span>
+                            <h3>The Path to Artificial General Intelligence</h3>
+                        </div>
+                    </div>
+                    <div class="discover-card" data-topic="James Webb Telescope Discoveries">
+                        <img class="discover-img" src="https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=600&auto=format&fit=crop" alt="Space">
+                        <div class="discover-content">
+                            <span class="discover-badge">Science</span>
+                            <h3>Latest Discoveries from the James Webb Telescope</h3>
+                        </div>
+                    </div>
+                    <div class="discover-card" data-topic="Future of Battery Technology and Renewable Energy">
+                        <img class="discover-img" src="https://images.unsplash.com/photo-1466611653911-95081537e5b7?q=80&w=600&auto=format&fit=crop" alt="Green Energy">
+                        <div class="discover-content">
+                            <span class="discover-badge">Environment</span>
+                            <h3>Breakthroughs in Renewable Energy Tech</h3>
+                        </div>
+                    </div>
+                    <div class="discover-card" data-topic="SpaceX Starship Flight 5 and Mars Colonization Plans">
+                        <img class="discover-img" src="https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?q=80&w=600&auto=format&fit=crop" alt="Rocket Space">
+                        <div class="discover-content">
+                            <span class="discover-badge">Aerospace</span>
+                            <h3>SpaceX Starship orbital launches and Mars plans</h3>
+                        </div>
+                    </div>
+                    <div class="discover-card" data-topic="Nvidia Blackwell GPU Architecture capabilities">
+                        <img class="discover-img" src="https://picsum.photos/seed/computerchip/600/400" alt="GPU Hardware">
+                        <div class="discover-content">
+                            <span class="discover-badge">Hardware</span>
+                            <h3>Nvidia's Blackwell GPU revolutionizing AI training</h3>
+                        </div>
+                    </div>
+                    <div class="discover-card" data-topic="Neuralink brain-computer interface patient progress">
+                        <img class="discover-img" src="https://picsum.photos/seed/neuroscience/600/400" alt="Neurotech">
+                        <div class="discover-content">
+                            <span class="discover-badge">Neurotech</span>
+                            <h3>Updates on Neuralink human interface trials</h3>
+                        </div>
+                    </div>
+                    <div class="discover-card" data-topic="Quantum Computing Error Correction breakthroughs">
+                        <img class="discover-img" src="https://picsum.photos/seed/quantumcomputer/600/400" alt="Quantum Computing">
+                        <div class="discover-content">
+                            <span class="discover-badge">Physics</span>
+                            <h3>Solving noise in Quantum Computing hardware</h3>
+                        </div>
+                    </div>
+                    <div class="discover-card" data-topic="GLP-1 Weight Loss Drugs economic impact">
+                        <img class="discover-img" src="https://picsum.photos/seed/medicalvial/600/400" alt="Medicine">
+                        <div class="discover-content">
+                            <span class="discover-badge">Health</span>
+                            <h3>The economic ripple effects of GLP-1 treatments</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SPACES VIEW -->
+            <div class="view hidden" id="spaces-view">
+                <div class="view-header spaces-header">
+                    <h2><i data-lucide="folder"></i> Spaces</h2>
+                    <button class="outline-btn"><i data-lucide="plus"></i> New Space</button>
+                </div>
+                <div class="spaces-grid">
+                    <div class="space-card">
+                        <i data-lucide="briefcase"></i>
+                        <h3>Work & Projects</h3>
+                        <p>0 files • 0 threads</p>
+                    </div>
+                    <div class="space-card">
+                        <i data-lucide="book-open"></i>
+                        <h3>Research</h3>
+                        <p>0 files • 0 threads</p>
+                    </div>
+                    <div class="space-card">
+                        <i data-lucide="user"></i>
+                        <h3>Personal</h3>
+                        <p>0 files • 0 threads</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COMPUTER VIEW -->
+            <div class="view hidden" id="computer-view">
+                <div class="view-header">
+                    <h2><i data-lucide="cpu"></i> Local Knowledge Base</h2>
+                    <p class="view-subtitle">Upload files for deep RAG synthesis.</p>
+                </div>
+                <div class="upload-dropzone" id="computer-dropzone">
+                    <i data-lucide="upload-cloud" class="upload-icon"></i>
+                    <h3>Drag & Drop files here</h3>
+                    <p>Support for PDF, TXT, MD, PNG, JPG. Maximum 50MB per file.</p>
+                    <button class="outline-btn upload-btn-trigger">Browse Files</button>
+                    <input type="file" id="computer-file-input" hidden multiple accept=".txt,.pdf,.md,.png,.jpg,.jpeg,.webp">
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="main.js?v=11"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

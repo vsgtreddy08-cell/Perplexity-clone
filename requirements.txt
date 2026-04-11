@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+requests
+pydantic
+crawl4ai
+duckduckgo-search
+pypdf
+google-generativeai
+numpy
+scipy
+firebase-admin

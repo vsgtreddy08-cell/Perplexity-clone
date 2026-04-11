@@ -1,0 +1,44 @@
+# Environment & Secrets
+.env
+*.key
+firebase-admin-key.json
+firebase-auth.json
+perplexity-8cd7e-firebase-adminsdk-*.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Scratch & Debug (keep repo clean)
+scratch/
+
+# Gemini Agent Data
+.gemini/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+database_export.json
+
+# Logs & temp files
+*.log
+*.html
+!index.html
+
+# Test artifacts
+smoke_test_img.png
+test.txt
+rag_test_secret.txt
