@@ -10,3 +10,4 @@ numpy
 scipy
 firebase-admin
 ddgs
+python-multipart
